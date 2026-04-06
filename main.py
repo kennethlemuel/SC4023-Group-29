@@ -3,8 +3,6 @@ import os
 import csv
 import re
 from data_storage.column_store import ColumnStore
-
-
 from data_storage.month_parser import parse_month_value, MonthParseError
 from data_storage.models import QueryResult, OutputRow, sort_query_results
 from constants import assigned_towns, towns, flat_type, storey_range, flat_model
@@ -51,19 +49,19 @@ def load_data(file_path, store_instance):
                 
                 # Use named arguments to match your ColumnStore.append_row
                 store_instance.append_row(
-                    month_raw=parts[0],           # index 0 
+                    month_raw=parts[0],           # index 0 (Month)
                     year=parsed_date.year,
                     month_number=parsed_date.month_number,
-                    town_raw=parts[1],            # index 1 
-                    block=parts[2],               # index 2 
-                    street_name=parts[3],         # index 3 
-                    flat_type=parts[4],           # index 4 
-                    flat_model=parts[5],          # index 5 
-                    storey_range=parts[6],        # index 6 
-                    floor_area_sqm=float(parts[7]), # index 7 
-                    lease_commence_raw=parts[8],  # index 8 
+                    town_raw=parts[1],            # index 1 (Town)
+                    flat_type=parts[2],           # index 2 (Flat Type)
+                    block=parts[3],               # index 3 (Block)
+                    street_name=parts[4],         # index 4 (Street Name)
+                    storey_range=parts[5],        # index 5 (Storey Range)
+                    floor_area_sqm=float(parts[6]), # index 6 (Floor Area)
+                    flat_model=parts[7],          # index 7 (Flat Model)
+                    lease_commence_raw=parts[8],  # index 8 (Lease)
                     lease_commence_year=int(parts[8]),
-                    resale_price=float(parts[9])  # index 9 
+                    resale_price=float(parts[9])  # index 9 (Resale Price)
                 )
                 count += 1
                 if count % 10000 == 0:
