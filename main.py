@@ -122,8 +122,15 @@ def run_project_queries(main_store, matric_num):
                     best_record = main_store.get_row_view(i)
 
             # Valid pair check: Min Price per Sqm <= 4725
+            # if best_record and min_price_sqm <= 4725:
+            #     results.append(((x, y), best_record))
             if best_record and min_price_sqm <= 4725:
-                results.append(((x, y), best_record))
+                # create a QueryResult object
+                results.append(QueryResult(
+                    x=x, 
+                    y=y, 
+                    matched_row_id=best_record.row_id
+                ))
     
     return results
 
@@ -150,18 +157,49 @@ if __name__ == "__main__":
     query_results = run_project_queries(main_store, MATRIC)
 
     # Write Output File: ScanResult_<MatricNum>.csv
+    # output_file = f"ScanResult_{MATRIC}.csv"
+    # with open(output_file, 'w') as f:
+    #     # 1. Header row is ALWAYS required
+    #     f.write("(x, y), Year, Month, Town, Block, Floor_Area, Flat_Model, Lease_Commence_Date, Price_Per_Square_Meter\n")
+        
+    #     # 2. Check if query_results is empty
+    #     if not query_results:
+    #         f.write("No result\n")
+    #     else:
+    #         for (x, y), rec in query_results:
+    #             # Round Price_Per_Square_Meter as required
+    #             line = f"({x}, {y}), {rec.year}, {rec.month_number:02d}, {rec.town_raw}, {rec.block}, {rec.floor_area_sqm}, {rec.flat_model}, {rec.lease_commence_year}, {round(rec.price_per_sqm)}\n"
+    #             f.write(line)
+
+    # print(f"Results saved to {output_file}")
     output_file = f"ScanResult_{MATRIC}.csv"
-    with open(output_file, 'w') as f:
-        # 1. Header row is ALWAYS required
+    with open(output_file, 'w', encoding='utf-8') as f:
+        # Title row must be exactly as shown
         f.write("(x, y), Year, Month, Town, Block, Floor_Area, Flat_Model, Lease_Commence_Date, Price_Per_Square_Meter\n")
         
-        # 2. Check if query_results is empty
         if not query_results:
-            f.write("No result\n")
+            f.write("No result\n") # Required if no qualified data is found
         else:
-            for (x, y), rec in query_results:
-                # Round Price_Per_Square_Meter as required
-                line = f"({x}, {y}), {rec.year}, {rec.month_number:02d}, {rec.town_raw}, {rec.block}, {rec.floor_area_sqm}, {rec.flat_model}, {rec.lease_commence_year}, {round(rec.price_per_sqm)}\n"
+            # 1. Sort by increasing x, then increasing y
+            sorted_results = sort_query_results(query_results)
+        
+            for res in sorted_results:
+                # res is now a QueryResult object, so we use res.matched_row_id
+                rec = main_store.get_row_view(res.matched_row_id)
+                
+                area = int(rec.floor_area_sqm) if rec.floor_area_sqm.is_integer() else rec.floor_area_sqm
+                
+                line = (
+                    f"{res.pair_label},"              # Uses the "(x, y)" property from models.py
+                    f"{rec.year},"
+                    f"{rec.month_number:02d},"
+                    f"{rec.town_raw},"
+                    f"{rec.block},"
+                    f"{area},"
+                    f"{rec.flat_model},"
+                    f"{rec.lease_commence_year},"
+                    f"{round(rec.price_per_sqm)}\n"
+                )
                 f.write(line)
 
-    print(f"Results saved to {output_file}")
+    print(f"Final output generated: {output_file}")
