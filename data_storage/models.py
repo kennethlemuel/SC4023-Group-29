@@ -146,3 +146,34 @@ def _require_output_text(field_name: str, value: str) -> str:
     if not clean_value:
         raise ModelValidationError(f"{field_name} cannot be empty.")
     return clean_value
+
+
+@dataclass
+class QueryResult:
+    x: int
+    y: int
+    matched_row_id: int
+    price_per_sqm: float  # Ensure this field is defined here
+
+    @property
+    def pair_label(self) -> str:
+        return f"({self.x}, {self.y})"
+
+# def create_result_obj(x, y, best_idx, min_ppsm):
+#     """
+#     Creates a Result object to store the winning record for a specific (x, y) pair.
+#     """
+#     return QueryResult(
+#         x=x,
+#         y=y,
+#         matched_row_id=best_idx,
+#         price_per_sqm=min_ppsm
+#     )
+
+def create_result_obj(x, y, best_idx, min_ppsm):
+    return QueryResult(
+        x=x,
+        y=y,
+        matched_row_id=best_idx,
+        price_per_sqm=min_ppsm
+    )

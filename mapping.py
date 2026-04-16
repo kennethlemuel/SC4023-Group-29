@@ -230,3 +230,29 @@ class BlockMapper(Mapper):
             block += chr(letter)
 
         return block
+    
+
+def get_query_params(matric_num):
+    # a) Target Year: Last digit of matric matches last digit of YYYY [cite: 17]
+    # Note: If last digit is 7, Year is 2017. 
+    year_digit = int(matric_num[-2]) 
+    target_year = 2010 + year_digit
+    if target_year < 2015: target_year += 10 # Adjusts for the 2015-2024 range [cite: 11]
+
+    # b) Commencing Month: Second last digit ("0" is Oct) [cite: 20]
+    month_digit = int(matric_num[-3])
+    start_month = 10 if month_digit == 0 else month_digit
+
+    # c) Town List: Based on all digits in matric [cite: 21, 24]
+    # Extract every unique digit from the matriculation number
+    digits = set(re.findall(r'\d', matric_num))
+    
+    # Map digits using Table 1 from the manual [cite: 23]
+    town_map = {
+        '0': 'BEDOK', '1': 'BUKIT PANJANG', '2': 'CLEMENTI', '3': 'CHOA CHU KANG',
+        '4': 'HOUGANG', '5': 'JURONG WEST', '6': 'PASIR RIS', '7': 'TAMPINES',
+        '8': 'WOODLANDS', '9': 'YISHUN'
+    }
+    target_towns = [town_map[d] for d in digits if d in town_map]
+
+    return target_year, start_month, target_towns
