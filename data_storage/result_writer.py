@@ -1,5 +1,6 @@
 from __future__ import annotations
 import csv
+import math
 from pathlib import Path
 from data_storage.column_store import ColumnStore, ColumnStoreError
 from data_storage.models import OUTPUT_HEADERS, OutputRow, QueryResult, sort_query_results
@@ -70,7 +71,7 @@ def _build_matched_output_row(store: ColumnStore, result: QueryResult) -> Output
         floor_area=_format_floor_area(row.floor_area_sqm),
         flat_model=row.flat_model,
         lease_commence_date=str(row.lease_commence_year),
-        price_per_square_meter=str(round(row.price_per_sqm)),
+        price_per_square_meter=str(_round_positive_half_up(row.price_per_sqm)),
     )
 
 
@@ -93,3 +94,7 @@ def _format_floor_area(value: float) -> str:
     if value.is_integer():
         return str(int(value))
     return format(value, "g")
+
+
+def _round_positive_half_up(value: float) -> int:
+    return math.floor(value + 0.5)

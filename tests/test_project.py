@@ -9,7 +9,10 @@ from pathlib import Path
 
 from data_processing.config import build_query_config
 from data_processing.month_range import build_month_range
+from data_storage.column_store import ColumnStore
 from data_storage.month_parser import parse_month_value
+from data_storage.models import QueryResult
+from data_storage.result_writer import build_output_rows
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -50,6 +53,28 @@ class ProjectTest(unittest.TestCase):
 
         self.assertEqual(build_month_range(config, 1), (201905, 201905))
         self.assertEqual(build_month_range(config, 8), (201905, 201912))
+
+    def test_price_per_square_meter_rounds_half_up(self) -> None:
+        store = ColumnStore()
+        row_id = store.append_row(
+            month_raw="2019-05",
+            year=2019,
+            month_number=5,
+            town_raw="JURONG WEST",
+            flat_type="5 ROOM",
+            block="817",
+            street_name="JURONG WEST ST 81",
+            storey_range="01 TO 03",
+            floor_area_sqm=128,
+            flat_model="Improved",
+            lease_commence_raw="1993",
+            lease_commence_year=1993,
+            resale_price=360000,
+        )
+
+        output_row = build_output_rows(store, [QueryResult(1, 114, row_id)])[0]
+
+        self.assertEqual(output_row.price_per_square_meter, "2813")
 
     def test_default_program_output_shape_and_key_rows(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
